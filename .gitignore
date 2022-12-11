@@ -1,5 +1,6 @@
 # interpreter bytecode
 __pycache__/
+.idea/
 
 media/
 weights/
