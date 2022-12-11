@@ -4,6 +4,7 @@ __pycache__/
 
 media/
 weights/
+trackers/smile_track
 
 # evaluation tools folder
 val_utils/

@@ -53,8 +53,8 @@ class Visualiser:
 
         # Print Header
         info = f'\n Video: {self.__curr_file_id + 1}/{len(self.video_files)}' \
-               f' Frame: {self.__curr_frame_id + 1}/{self.video_files[self.__curr_file_id][1].nb_frames}' \
-               f' File Path: {self.video_files[self.__curr_file_id][0]}'
+               f' Frame: {self.__curr_frame_id + 1}/{self.video_files[self.__curr_file_id].nb_frames}' \
+               f' File Path: {self.video_files[self.__curr_file_id].file_path}'
         print(info)
 
         # Print detections per class
@@ -129,7 +129,7 @@ class Visualiser:
             title={
                 'text':
                     f"Trackers Viewer: "
-                    f"{self.dataloader.video_files[self.__curr_file_id][0]} "
+                    f"{self.dataloader.video_files[self.__curr_file_id].file_path} "
                     f"({self.yolo_model_name} | {self.tracker_name})",
                 'x': 0.5,
                 'xanchor': 'center',

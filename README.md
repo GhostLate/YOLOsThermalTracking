@@ -24,6 +24,8 @@ pip install -r requirements.txt
 I also suggest to use this [NVIDIA docker](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch) container or 
 just install manually **PyTorch**>=1.13, **CUDA**>=11.7, **TensorRT**>=8.5, **cuDNN**>=8.5
 
+All tested YOLOs and ReID weights (***PyTorch*** and ***TensorRT***) you can find [here](https://drive.google.com/drive/folders/1Jjbe5lhXMEQxNF0Rgq8H8tHRn03KzR3v?usp=sharing)
+
 ## Tracking
 
 ```bash
@@ -61,7 +63,7 @@ $ python3 inference.py --yolo-weights yolov5m.pt
                                      yolov7.engine
 ```
 
-**ReID models**
+**ReID models:**
 
 For StrongSort tracking method you need to choose a ReID model based from this [ReID model zoo](https://kaiyangzhou.github.io/deep-person-reid/MODEL_ZOO). 
 These model can be further optimized for you needs by the `reid_export.py` script.

@@ -1,6 +1,9 @@
 import argparse
 import os
+import sys
+from pathlib import Path
 
+import torch
 import cv2
 import numpy as np
 
@@ -12,13 +15,7 @@ os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
 os.environ["NUMEXPR_NUM_THREADS"] = "1"
 os.environ["CUDA_MODULE_LOADING"] = "LAZY"
 
-import sys
-from pathlib import Path
-import torch
-
-FILE = Path(__file__).resolve()
-ROOT = FILE.parents[0]  # YOLOU root directory
-WEIGHTS = ROOT / 'weights'
+ROOT = Path(__file__).resolve().parents[0]  # YOLOU root directory
 
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
@@ -26,8 +23,6 @@ if str(ROOT / 'YOLOU') not in sys.path:
     sys.path.append(str(ROOT / 'YOLOU'))  # add YOLOU ROOT to PATH
 if str(ROOT / 'trackers' / 'strong_sort') not in sys.path:
     sys.path.append(str(ROOT / 'trackers' / 'strong_sort'))  # add strong_sort ROOT to PATH
-if str(ROOT / 'trackers' / 'smile_track') not in sys.path:
-    sys.path.append(str(ROOT / 'trackers' / 'smile_track'))  # add strong_sort ROOT to PATH
 
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
@@ -39,15 +34,16 @@ from model import Detector
 from dataloader import DataLoader
 from visualiser import Visualiser
 from custom_utils import time_sync, check_img_size
+from media_utils import VideoSaver
 
 
 @torch.no_grad()
-def main(source, yolo_weights, tracking_method, reid_weights=None, fp16=True, classes=None, imgsz=(640, 640)):
+def main(source, yolo_weights, tracking_method,
+         reid_weights=None, fp16=True, classes=None, imgsz=(640, 640), save_folder=None, show_results=True):
     # Load model
     detector = Detector(yolo_weights, half=fp16)
     imgsz = check_img_size(imgsz, s=detector.model.stride)  # check image size
 
-    # Initialize a DataLoader
     dataloader = DataLoader(source, img_size=imgsz, stride=detector.model.stride)
 
     # Create a Tracker instance
@@ -57,13 +53,13 @@ def main(source, yolo_weights, tracking_method, reid_weights=None, fp16=True, cl
             tracker.model.warmup()
     obj_tracks = {}
 
-    # Create a Visualizer
     visualiser = Visualiser(dataloader, detector.yolo_model_name, detector.class_names, tracking_method, obj_tracks)
+    video_saver = VideoSaver(save_folder)
 
     # Run inference
     curr_frame, prev_frame = None, None
-    for mod_frame, orig_frame in dataloader:
-        # Inference
+    for mod_frame, orig_frame, meta_data in dataloader:
+        # Get detections
         pred, mod_frame, infer_dtime = detector(mod_frame, classes=classes)
 
         # Process predictions
@@ -83,7 +79,7 @@ def main(source, yolo_weights, tracking_method, reid_weights=None, fp16=True, cl
                 # Rescale boxes from mod_frame to orig_frame size
                 det[:, :4] = scale_coords(mod_frame.shape[2:], det[:, :4], orig_frame.shape).round()
 
-                # pass detections to tracker
+                # Pass detections to tracker
                 t2 = time_sync()
                 outputs = tracker.update(det.cpu(), orig_frame)  # [x1, y1, x2, y2, track_id, class_id, conf, queue]
                 tracker_dtime += time_sync() - t2
@@ -99,7 +95,7 @@ def main(source, yolo_weights, tracking_method, reid_weights=None, fp16=True, cl
                         obj_tracks.setdefault(dataloader.curr_file_id, {})
                         obj_tracks[dataloader.curr_file_id].setdefault(
                             (track_id, class_id),
-                            np.zeros(dataloader.video_files[dataloader.curr_file_id][1].nb_frames))
+                            np.zeros(dataloader.video_files[dataloader.curr_file_id].nb_frames))
                         obj_tracks[dataloader.curr_file_id][(track_id, class_id)][dataloader.curr_frame_id] = conf
             else:
                 t2 = time_sync()
@@ -111,11 +107,17 @@ def main(source, yolo_weights, tracking_method, reid_weights=None, fp16=True, cl
             visualiser.draw(infer_dtime, det, tracker_dtime)
 
             orig_frame = annotator.result()
-            cv2.imshow('test', orig_frame)
-            cv2.waitKey(1)
+
+            if save_folder is not None:
+                video_saver(orig_frame, meta_data)
+
+            if show_results:
+                cv2.imshow('tracking_results', orig_frame)
+                cv2.waitKey(1)
 
             prev_frame = curr_frame
     visualiser.close()
+    video_saver.close()
 
 
 def parse_opt():
@@ -124,7 +126,7 @@ def parse_opt():
         '-yw', '--yolo-weights', type=str, default=ROOT / 'weights/yolov5s.engine',
         help='yolo model path (.pt / .engine)')
     parser.add_argument(
-        '-s', '--source', nargs='+', default=ROOT / 'test.webm',
+        '-s', '--source', nargs='+', default=ROOT / './media/', # default=ROOT / './media/test.webm',
         help='file/files or folder')
     parser.add_argument(
         '--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640, 640],
@@ -139,6 +141,12 @@ def parse_opt():
         '--fp16', default=True,
         help='use FP16 half-precision inference')
     parser.add_argument(
+        '--show-results', default=True,
+        help='show tracking results on the screen')
+    parser.add_argument(
+        '--save-folder', type=str, default=ROOT / './media/out', # default=None,
+        help='folder to save tracking results')
+    parser.add_argument(
         '-tm', '--tracking-method', choices=['strongsort', 'ocsort', 'bytetrack'], default='ocsort',
         help='The tracker to choose (for strongsort require OSNet weights)')
     parser.add_argument(
@@ -151,7 +159,17 @@ def parse_opt():
 
 if __name__ == "__main__":
     opt = parse_opt()
-    main(opt.source, opt.yolo_weights, opt.tracking_method, opt.reid_weights, opt.fp16, opt.classes, opt.imgsz)
+    main(
+        source=opt.source,
+        yolo_weights=opt.yolo_weights,
+        tracking_method=opt.tracking_method,
+        reid_weights=opt.reid_weights,
+        fp16=opt.fp16,
+        classes=opt.classes,
+        imgsz=opt.imgsz,
+        save_folder=opt.save_folder,
+        show_results=opt.show_results
+    )
 
 
 # YOLOv5: 'yolov5s.engine', 'yolov5s.pt', 'yolov5m.engine', 'yolov5m.pt'

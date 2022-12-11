@@ -5,7 +5,7 @@ import cv2
 import ffmpegio
 import numpy as np
 
-from metadata import MetaData
+from media_utils import MetaData
 
 VID_FORMATS = 'asf', 'avi', 'gif', 'm4v', 'mkv', 'mov', 'mp4', 'mpeg', 'mpg', 'ts', 'wmv', 'webm'
 
@@ -13,10 +13,11 @@ VID_FORMATS = 'asf', 'avi', 'gif', 'm4v', 'mkv', 'mov', 'mp4', 'mpeg', 'mpg', 't
 class DataLoader:
     _curr_file_id: int
     _curr_frame_id: int
-    _video_files: [(str, MetaData)]
+    _video_files: {int: MetaData}
 
     def __init__(self, source: str | Path | list, img_size=640, stride=32):
-        self._video_files = []
+        self._video_files = {}
+        file_id = 0
         for path in sorted(source) if isinstance(source, list) else [source]:
             if isinstance(source, Path):
                 path = str(Path(path).resolve())
@@ -25,26 +26,38 @@ class DataLoader:
                     for name in files:
                         if name.split('.')[-1].lower() in VID_FORMATS:
                             path = os.path.join(root, name)
-                            self._video_files.append((path, MetaData(path)))
+                            meta_data = MetaData(path)
+                            meta_data.file_path = path
+                            self._video_files[file_id] = meta_data
+                            file_id += 1
             elif os.path.isfile(path) and path.split('.')[-1].lower() in VID_FORMATS:
-                self._video_files.append((path, MetaData(path)))
+                meta_data = MetaData(path)
+                meta_data.file_path = path
+                self._video_files[file_id] = meta_data
+                file_id += 1
         self.img_size = img_size
         self.stride = stride
         assert len(self._video_files) > 0, f'No videos found in {source}. Supported formats are:\n{VID_FORMATS}'
 
     def __iter__(self):
-        for curr_file_id, (file_path, _) in enumerate(self._video_files):
+        for curr_file_id, meta_data in sorted(self._video_files.items()):
             self._curr_file_id = curr_file_id
-            with ffmpegio.open(file_path, 'rv', blocksize=100) as video_data:
+            with ffmpegio.open(meta_data.file_path, 'rv', blocksize=100) as video_data:
+
+                if not hasattr(meta_data, 'fps'):
+                    if hasattr(video_data, 'rate'):
+                        meta_data.fps = float(video_data.rate)
+                    if hasattr(video_data, 'frame_rate'):
+                        meta_data.fps = float(video_data.frame_rate)
+
                 self._curr_frame_id = 0
                 for frames_batch in video_data:
                     for frame in frames_batch:
-                        self._curr_frame_id += 1
-
                         mod_frame = letterbox(frame, self.img_size, stride=self.stride, auto=False)[0]  # padded resize
                         mod_frame = mod_frame.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
                         mod_frame = np.ascontiguousarray(mod_frame)  # contiguous
-                        yield mod_frame, frame
+                        yield mod_frame, frame, meta_data
+                        self._curr_frame_id += 1
 
     @property
     def curr_file_id(self):
@@ -57,6 +70,7 @@ class DataLoader:
     @property
     def video_files(self):
         return self._video_files
+
 
 def letterbox(im, new_shape=(640, 640), color=(114, 114, 114), auto=True, scaleFill=False, scaleup=True, stride=32):
     # Resize and pad image while meeting stride-multiple constraints
