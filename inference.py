@@ -126,7 +126,7 @@ def parse_opt():
         '-yw', '--yolo-weights', type=str, default=ROOT / 'weights/yolov5s.engine',
         help='yolo model path (.pt / .engine)')
     parser.add_argument(
-        '-s', '--source', nargs='+', default=ROOT / './media/', # default=ROOT / './media/test.webm',
+        '-s', '--source', nargs='+', default=ROOT / './media/',
         help='file/files or folder')
     parser.add_argument(
         '--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640, 640],
@@ -144,7 +144,7 @@ def parse_opt():
         '--show-results', default=True,
         help='show tracking results on the screen')
     parser.add_argument(
-        '--save-folder', type=str, default=ROOT / './media/out', # default=None,
+        '--save-folder', type=str, default=None,
         help='folder to save tracking results')
     parser.add_argument(
         '-tm', '--tracking-method', choices=['strongsort', 'ocsort', 'bytetrack'], default='ocsort',
