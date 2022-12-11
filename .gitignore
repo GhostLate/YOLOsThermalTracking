@@ -1,8 +1,8 @@
 # interpreter bytecode
 __pycache__/
 
-# experiment results
-runs/
+media/
+weights/
 
 # evaluation tools folder
 val_utils/
