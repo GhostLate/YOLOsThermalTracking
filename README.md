@@ -36,8 +36,8 @@ $ python3 inference.py --yolo-weights <weights path> --source <file(s) / folder 
 
 ```bash
 $ python3 inference.py --tracking-method ocsort
-                                    bytetrack
-                                    strongsort --reid-weights <ReID weights path>                
+                                         bytetrack
+                                         strongsort --reid-weights <ReID weights path>                
 ```
 
 **Tracking sources:**
@@ -46,21 +46,21 @@ Tracking can be run on most video formats which [FFMPEG](https://ffmpeg.org/) su
 
 ```bash
 $ python3 inference.py --source vid.mp4  # video
-                           vid1.mp4, vid2.webm  # list of videos
-                           path/  # directory
+                                vid1.mp4, vid2.webm  # list of videos
+                                path/  # directory
 ```
 
 **YOLO models:**
 
 ```bash
 $ python3 inference.py --yolo-weights yolov5m.pt
-                                     yolov5m.engine
-                                     yolov5s.pt
-                                     yolov5s.engine
-                                     yolov7s.pt (tiny version)
-                                     yolov7s.engine (tiny version)
-                                     yolov7.pt
-                                     yolov7.engine
+                                      yolov5m.engine
+                                      yolov5s.pt
+                                      yolov5s.engine
+                                      yolov7s.pt (tiny version)
+                                      yolov7s.engine (tiny version)
+                                      yolov7.pt
+                                      yolov7.engine
 ```
 
 **ReID models:**
@@ -69,8 +69,10 @@ For StrongSort tracking method you need to choose a ReID model based from this [
 These model can be further optimized for you needs by the `reid_export.py` script.
 
 ```bash
-$ python3 track.py --source 0 --reid-weights osnet_x0_25_msmt17.pt
-                                            osnet_x0_5_msmt17.engine
+$ python3 inference.py --reid-weights osnet_x0_25_msmt17.pt
+                                      osnet_x0_25_msmt17.engine
+                                      osnet_x0_5_msmt17.pt
+                                      osnet_x0_5_msmt17.engine
 ```
   
 **Filter tracked classes:**
@@ -78,11 +80,18 @@ $ python3 track.py --source 0 --reid-weights osnet_x0_25_msmt17.pt
 If you want to track only specific classes of objects, add their index after the `--classes` flag.
 
 ```bash
-$ python3 track.py --source 0 --yolo-weights yolov5s.pt --classes 16 17  # COCO yolov5 model. Track cats and dogs, only
+$ python3 inference.py --classes 0  # Only Pedestrians
 ```
 
 [Here](https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/) is a list of all the possible objects that a YOLO model trained on MS COCO can detect.
 
+**Save results:**
+
+You can save results as video(s) in the specific folder 
+
+```bash
+$ python3 inference.py --save-folder <save_path> 
+```
 
 ## Acknowledgements
 
