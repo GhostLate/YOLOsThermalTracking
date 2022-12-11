@@ -1,0 +1,6 @@
+[submodule "YOLOU"]
+	path = YOLOU
+	url = https://github.com/jizhishutong/YOLOU
+[submodule "trackers/strong_sort/deep/reid"]
+	path = trackers/strong_sort/deep/reid
+	url = https://github.com/KaiyangZhou/deep-person-reid

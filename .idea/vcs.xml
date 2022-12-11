@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/../SMILEtrack" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/YOLOU" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/tensorrt-python" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/yolov5" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/yolov7" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/yolov7/tensorrt-python" vcs="Git" />
+  </component>
+</project>
