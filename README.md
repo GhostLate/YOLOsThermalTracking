@@ -18,6 +18,8 @@ sudo apt-get update && sudo apt upgrade
 sudo apt install ffmpeg
 python3 -m pip install -e .
 ```
+Then go to ./YOLOU 
+            trt.init_libnvinfer_plugins(logger, namespace="")
 
 I also suggest to use this [NVIDIA docker](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch) container or 
 just install manually **PyTorch**>=1.13, **CUDA**>=11.7, **TensorRT**>=8.5, **cuDNN**>=8.5
