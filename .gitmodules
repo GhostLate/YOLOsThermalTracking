@@ -1,6 +1,6 @@
 [submodule "yolos_thermal_tracking/YOLOU"]
 	path = yolos_thermal_tracking/YOLOU
-	url = https://github.com/jizhishutong/YOLOU
+	url = https://github.com/GhostLate/YOLOU
 [submodule "yolos_thermal_tracking/trackers/strong_sort/deep/reid"]
 	path = yolos_thermal_tracking/trackers/strong_sort/deep/reid
 	url = https://github.com/KaiyangZhou/deep-person-reid
