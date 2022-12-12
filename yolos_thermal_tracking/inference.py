@@ -52,8 +52,11 @@ def main(source, yolo_weights, tracking_method,
 
     imgsz = check_img_size(imgsz, s=detector.model.stride)  # check image size
     dataloader = DataLoader(source, img_size=imgsz, stride=detector.model.stride)
-    visualiser = Visualiser(dataloader, detector.yolo_model_name, detector.class_names, tracking_method, obj_tracks)
+
     video_saver = VideoSaver(save_folder)
+
+    tracker_name = f"{tracking_method} - {Path(reid_weights).stem}" if reid_weights is not None else tracking_method
+    visualiser = Visualiser(dataloader, detector.yolo_model_name, detector.class_names, tracker_name, obj_tracks)
 
     # Run inference
     curr_frame, prev_frame = None, None
@@ -100,6 +103,7 @@ def main(source, yolo_weights, tracking_method,
             if hasattr(tracker, 'tracker.py') and hasattr(tracker.tracker, 'pred_n_update_all_tracks'):
                 if prev_frame is not None and curr_frame is not None:
                     tracker.tracker.pred_n_update_all_tracks()
+                    print(True)
             tracker_dtime += time_sync() - t2
 
         visualiser.draw(infer_dtime, det, tracker_dtime)

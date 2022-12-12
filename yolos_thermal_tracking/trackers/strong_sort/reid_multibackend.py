@@ -11,10 +11,9 @@ import torchvision.transforms as T
 from yolos_thermal_tracking.YOLOU.models.common import export_formats
 from yolos_thermal_tracking.YOLOU.utils.general import LOGGER, check_version, check_requirements
 from yolos_thermal_tracking.trackers.strong_sort.deep.models import build_model
-from yolos_thermal_tracking.trackers.strong_sort.deep.reid_model_factory import (show_downloadeable_models, get_model_url, get_model_name,
+from yolos_thermal_tracking.trackers.strong_sort.deep.reid_model_factory import (show_downloadeable_models,
+                                                                                 get_model_url, get_model_name,
                                                                                  load_pretrained_weights)
-
-
 
 
 def check_suffix(file='yolov5s.pt', suffix=('.pt',), msg=''):
@@ -47,8 +46,14 @@ class ReIDDetectMultiBackend(nn.Module):
         self.transforms = []
         self.transforms += [T.Resize(self.image_size)]
         self.transforms += [T.ToTensor()]
-        self.transforms += [T.Normalize(mean=self.pixel_mean, std=self.pixel_std)]
-        self.preprocess = T.Compose(self.transforms)
+        if device.type == 'cuda':
+            self.preprocess_GPU = torch.nn.Sequential(
+                T.Normalize(mean=self.pixel_mean, std=self.pixel_std)
+            )
+        else:
+            self.transforms += [T.Normalize(mean=self.pixel_mean, std=self.pixel_std)]
+
+        self.preprocess_CPU = T.Compose(self.transforms)
         self.to_pil = T.ToPILImage()
 
         model_name = get_model_name(w)
@@ -170,11 +175,12 @@ class ReIDDetectMultiBackend(nn.Module):
         return types
 
     def _preprocess(self, im_batch):
-
         images = []
         for element in im_batch:
             image = self.to_pil(element)
-            image = self.preprocess(image)
+            image = self.preprocess_CPU(image)
+            if self.device.type == 'cuda':
+                image = self.preprocess_GPU(image)
             images.append(image)
 
         images = torch.stack(images, dim=0)
@@ -183,7 +189,6 @@ class ReIDDetectMultiBackend(nn.Module):
         return images
 
     def forward(self, im_batch):
-
         # preprocess batch
         im_batch = self._preprocess(im_batch)
 
