@@ -4,7 +4,6 @@ __pycache__/
 
 media/
 weights/
-yolos_thermal_tracking/trackers/smile_track
 
 # exports
 *_openvino_model
