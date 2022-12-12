@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from yolos_thermal_tracking.trackers.strong_sort.utils.parser import get_config
 from yolos_thermal_tracking.trackers.strong_sort.strong_sort import StrongSORT
 from yolos_thermal_tracking.trackers.ocsort.ocsort import OCSort
@@ -8,7 +10,9 @@ def create_tracker(tracker_type, appearance_descriptor_weights=None, device='', 
     if tracker_type == 'strongsort':
         assert appearance_descriptor_weights != None, 'ReID Weights arent given'
         cfg = get_config()
-        cfg.merge_from_file('trackers/strong_sort/configs/strong_sort.yaml')
+        cfg.merge_from_file('./yolos_thermal_tracking/trackers/strong_sort/configs/strong_sort.yaml')
+        if isinstance(appearance_descriptor_weights, str):
+            appearance_descriptor_weights = Path(appearance_descriptor_weights)
 
         strongsort = StrongSORT(
             appearance_descriptor_weights,

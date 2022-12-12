@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 from pathlib import Path
@@ -38,9 +39,9 @@ from media_utils import VideoSaver
 
 @torch.no_grad()
 def main(source, yolo_weights, tracking_method,
-         reid_weights=None, fp16=True, classes=None, imgsz=(640, 640), save_folder=None, show_results=True):
+         device='', reid_weights=None, fp16=True, classes=None, imgsz=(640, 640), save_folder=None, show_results=True):
     # Load model
-    detector = Detector(yolo_weights, half=fp16)
+    detector = Detector(yolo_weights, half=fp16, device=device)
 
     # Create a Tracker instance
     tracker = create_tracker(tracking_method, reid_weights, detector.device, half=fp16)
@@ -115,3 +116,56 @@ def main(source, yolo_weights, tracking_method,
         prev_frame = curr_frame
     visualiser.close()
     video_saver.close()
+
+
+def parse_opt():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-yw', '--yolo-weights', type=str, default='./weights/yolov5m.engine',
+        help='yolo model path (.pt / .engine)')
+    parser.add_argument(
+        '-s', '--source', nargs='+', default='./media/in',
+        help='file/files or folder')
+    parser.add_argument(
+        '--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640, 640],
+        help='inference size h,w')
+    parser.add_argument(
+        '--device', default='',
+        help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument(
+        '-c', '--classes', nargs='+', type=int, default=[0],
+        help='filter by class: --classes 0, or --classes 0 2 3')
+    parser.add_argument(
+        '--fp16', default=True,
+        help='use FP16 half-precision inference')
+    parser.add_argument(
+        '--show-results', default=True,
+        help='show tracking results on the screen')
+    parser.add_argument(
+        '--save-folder', type=str, default='./media/out',
+        help='folder to save tracking results')
+    parser.add_argument(
+        '-tm', '--tracking-method', choices=['strongsort', 'ocsort', 'bytetrack'], default='strongsort',
+        help='The tracker.py to choose (for strongsort require OSNet weights)')
+    parser.add_argument(
+        '-rw', '--reid-weights', type=str, default='./weights/osnet_x0_25_msmt17.engine',
+        help='ReID model path (.pt / .engine). ONLY for strongsort tracking method')
+    opt = parser.parse_args()
+    opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand
+    return opt
+
+
+if __name__ == "__main__":
+    opt = parse_opt()
+    main(
+        source=opt.source,
+        yolo_weights=opt.yolo_weights,
+        tracking_method=opt.tracking_method,
+        reid_weights=opt.reid_weights,
+        fp16=opt.fp16,
+        device=opt.device,
+        classes=opt.classes,
+        imgsz=opt.imgsz,
+        save_folder=opt.save_folder,
+        show_results=opt.show_results
+    )

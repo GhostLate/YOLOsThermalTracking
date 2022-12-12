@@ -28,7 +28,11 @@ All tested YOLOs and ReID weights (***PyTorch*** and ***TensorRT***) you can fin
 
 ## Tracking
 
+Firstly:
+
 ```bash
+$ cd ./yolos_thermal_tracking
+
 $ python3 inference.py --yolo-weights <weights path> --source <file(s) / folder path>
 ```
 
