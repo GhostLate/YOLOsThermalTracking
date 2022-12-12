@@ -5,6 +5,7 @@
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/YOLOU" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/tensorrt-python" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/yolos_thermal_tracking/YOLOU" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/yolov5" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/yolov7" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/yolov7/tensorrt-python" vcs="Git" />

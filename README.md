@@ -16,13 +16,13 @@ They can track any object that your YOLO model was trained to detect.
 ```bash
 sudo apt-get update && sudo apt upgrade
 sudo apt install ffmpeg
-pip install -r requirements.txt
-git clone https://github.com/jizhishutong/YOLOU
-cd ./YOLOU
-pip install -r requirements.txt
+python3 -m pip install -e .
 ```
+
 I also suggest to use this [NVIDIA docker](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch) container or 
 just install manually **PyTorch**>=1.13, **CUDA**>=11.7, **TensorRT**>=8.5, **cuDNN**>=8.5
+
+If you run from Python IDE, make sure that it **emulates terminal in output console**.
 
 All tested YOLOs and ReID weights (***PyTorch*** and ***TensorRT***) you can find [here](https://drive.google.com/drive/folders/1Jjbe5lhXMEQxNF0Rgq8H8tHRn03KzR3v?usp=sharing)
 
