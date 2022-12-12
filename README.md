@@ -14,9 +14,10 @@ They can track any object that your YOLO model was trained to detect.
 ## Installation
 
 ```bash
-sudo apt-get update && sudo apt upgrade
-sudo apt install ffmpeg
-python3 -m pip install -e .
+$ sudo apt-get update && sudo apt upgrade
+$ sudo apt install ffmpeg
+
+$ python3 -m pip install -e .
 ```
 
 I also suggest to use this [NVIDIA docker](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch) container or 
